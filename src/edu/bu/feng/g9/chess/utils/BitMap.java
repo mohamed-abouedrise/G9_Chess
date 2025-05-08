@@ -1,0 +1,48 @@
+package edu.bu.feng.g9.chess.utils;
+
+public class BitMap {
+
+    private long Map;
+
+    public BitMap(){
+        this.Map = 0L;
+    }
+
+    public void setBit(char file, int rank){
+        if(validateFile(file) && validateRank(rank))
+            this.Map |= 1L << (((rank - 1) << 3) + file - 'a');
+    }
+
+    public void clearBit(char file, int rank){
+        if(validateFile(file) && validateRank(rank))
+            this.Map &= ~(1L << (((rank - 1) << 3) + file - 'a'));
+    }
+
+    public boolean getBit(char file, int rank){
+        if(validateFile(file) && validateRank(rank))
+            return (this.Map >>> (((rank - 1) << 3) + file - 'a') & 1L) == 1;
+
+        return false;
+    }
+
+    private boolean validateFile(char file) {
+        return file >= 'a' && file <= 'h';
+    }
+
+    private boolean validateRank(int rank){
+        return rank >= 1 && rank <= 8;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder result = new StringBuilder();
+        for(int i = 8; i > 0; i--){
+            for(int j = 0; j < 8; j++){
+                result.append(this.getBit((char)(j + 'a'), i)?"1":"0");
+            }
+            result.append("\n");
+        }
+        return result.toString();
+    }
+
+}
