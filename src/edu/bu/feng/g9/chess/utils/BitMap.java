@@ -25,16 +25,22 @@ public class BitMap {
         return false;
     }
 
-    private boolean validateFile(char file) {
+    private static boolean validateFile(char file) {
         return file >= 'a' && file <= 'h';
     }
 
-    private boolean validateRank(int rank){
+    private static boolean validateRank(int rank){
         return rank >= 1 && rank <= 8;
     }
 
+    public static boolean validateIndex(int index){
+        return validateRank(getRank(index)) && validateFile(getFile(index));
+    }
+
     public static int toIndex(char file, int rank){
-        return ((rank - 1) << 3) + file - 'a';
+        if(validateRank(rank) && validateFile(file))
+            return ((rank - 1) << 3) + file - 'a';
+        return -1;
     }
 
     public static char getFile(int index){
