@@ -135,12 +135,4 @@ public class Board {
         return result.toString();
     }
 
-    public static void main(String[] args) {
-        Board b = Board.defaultBoard();
-        int[] m = edu.bu.feng.g9.chess.game.Pieces.knightMoves('b', 1, b, Color.WHITE);
-        for(int i : m){
-            System.out.println(String.valueOf(BitMap.getFile(i)) + BitMap.getRank(i));
-        }
-    }
-
 }
