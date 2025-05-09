@@ -33,6 +33,18 @@ public class BitMap {
         return rank >= 1 && rank <= 8;
     }
 
+    public static int toIndex(char file, int rank){
+        return ((rank - 1) << 3) + file - 'a';
+    }
+
+    public static char getFile(int index){
+        return (char) (index % 8 + 'a');
+    }
+
+    public static int getRank(int index){
+        return index / 8 + 1;
+    }
+
     @Override
     public String toString(){
         StringBuilder result = new StringBuilder();
