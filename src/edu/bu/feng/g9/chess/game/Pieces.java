@@ -7,151 +7,113 @@ import java.util.List;
 
 public class Pieces {
 
-    public static int[] rookMoves(char file, int rank, Board board, Board.Color color){
-        List<Integer> moves = new ArrayList<>();
-        for(int i = 1; file + i <= 'h'; i++){
-            if(BitMap.toIndex((char)(file + i), rank) != -1 && !checkIfSquareOccupied((char)(file + i), rank, board))
-                moves.add(BitMap.toIndex((char)(file + i), rank));
-            else
-                break;
+    private static final int BOARD_SIZE = 64;
+
+    public static final BitMap[] KNIGHT_MOVES = new BitMap[BOARD_SIZE];
+    public static final BitMap[] WHITE_PAWN_CAPTURE = new BitMap[BOARD_SIZE];
+    public static final BitMap[] BLACK_PAWN_CAPTURE = new BitMap[BOARD_SIZE];
+    public static final BitMap[] WHITE_PAWN_MOVES = new BitMap[BOARD_SIZE];
+    public static final BitMap[] BLACK_PAWN_MOVES = new BitMap[BOARD_SIZE];
+    public static final BitMap[] KING_MOVES = new BitMap[BOARD_SIZE];
+
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            KNIGHT_MOVES[i] = new BitMap();
+
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 2), BitMap.getRank(i) + 1));
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 2), BitMap.getRank(i) - 1));
+
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 2), BitMap.getRank(i) + 1));
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 2), BitMap.getRank(i) - 1));
+
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) + 2));
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) - 2));
+
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) + 2));
+            KNIGHT_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) - 2));
+
         }
-        for(int i = 1; file - i >= 'a'; i++){
-            if(BitMap.toIndex((char)(file - i), rank) != -1 && !checkIfSquareOccupied((char)(file - i), rank, board))
-                moves.add(BitMap.toIndex((char)(file - i), rank));
-            else
-                break;
-        }
-        for(int i = 1; rank + i <= 8; i++){
-            if(BitMap.toIndex(file, rank + i) != -1 && !checkIfSquareOccupied(file, rank + i, board))
-                moves.add(BitMap.toIndex(file, rank + i));
-            else
-                break;
-        }
-        for(int i = 1; rank - i >= 1; i++){
-            if(BitMap.toIndex(file, rank - i) != -1 && !checkIfSquareOccupied(file, rank - i, board))
-                moves.add(BitMap.toIndex(file, rank - i));
-            else
-                break;
-        }
-        return moves.stream().mapToInt(e -> e).toArray();
     }
 
-    public static int[] bishopMoves(char file, int rank, Board board, Board.Color color){
-        List<Integer> moves = new ArrayList<>();
-        for(int i = 1; file + i <= 'h'; i++){
-            if(BitMap.toIndex((char)(file + i), rank + i) != -1
-                    && !checkIfSquareOccupied((char)(file + i), rank + i, board))
-                moves.add(BitMap.toIndex((char)(file + i), rank + i));
-            else
-                break;
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            WHITE_PAWN_CAPTURE[i] = new BitMap();
+
+            if(BitMap.getRank(i) == 1 || BitMap.getRank(i) == 8)
+                continue;
+
+            WHITE_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) + 1));
+            WHITE_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) + 1));
+
         }
-        for(int i = 1; file - i >= 'a'; i++){
-            if(BitMap.toIndex((char)(file - i), rank + i) != -1
-                    && !checkIfSquareOccupied((char)(file - i), rank + i, board))
-                moves.add(BitMap.toIndex((char)(file - i), rank + i));
-            else
-                break;
-        }
-        for(int i = 1; file + i <= 'h'; i++){
-            if(BitMap.toIndex((char)(file + i), rank - i) != -1
-                    && !checkIfSquareOccupied((char)(file + i), rank - i, board)) {
-                moves.add(BitMap.toIndex((char) (file + i), rank - i));
+    }
+
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            WHITE_PAWN_MOVES[i] = new BitMap();
+
+            if(BitMap.getRank(i) == 1 || BitMap.getRank(i) == 8)
+                continue;
+
+            if(BitMap.getRank(i) == 2){
+                WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 2));
+                WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 2));
             }
-            else
-                break;
+
+            WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 1));
+            WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 1));
+
         }
-        for(int i = 1; file - i >= 'a'; i++){
-            if(BitMap.toIndex((char)(file - i), rank - i) != -1
-                    && !checkIfSquareOccupied((char)(file - i), rank - i, board))
-                moves.add(BitMap.toIndex((char)(file - i), rank - i));
-            else
-                break;
+    }
+
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            BLACK_PAWN_CAPTURE[i] = new BitMap();
+
+            if(BitMap.getRank(i) == 1 || BitMap.getRank(i) == 8)
+                continue;
+
+            BLACK_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) - 1));
+            BLACK_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) - 1));
+
         }
-        return moves.stream().mapToInt(e -> e).toArray();
     }
 
-    public static int[] queenMoves(char file, int rank, Board board, Board.Color color){
-        int[] straight = rookMoves(file, rank, board, color);
-        int[] diagonal = bishopMoves(file, rank, board, color);
-        int[] moves = new int[straight.length + diagonal.length];
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            BLACK_PAWN_MOVES[i] = new BitMap();
 
-        for(int i = 0; i < straight.length; i++)
-            moves[i] = straight[i];
-        for(int i = 0; i < diagonal.length; i++)
-            moves[i + straight.length] = diagonal[i];
+            if(BitMap.getRank(i) == 1 || BitMap.getRank(i) == 8)
+                continue;
 
-        return moves;
-    }
+            if(BitMap.getRank(i) == 7){
+                BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 2));
+                BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 2));
+            }
 
-    public static int[] knightMoves(char file, int rank, Board board, Board.Color color){
-        List<Integer> moves = new ArrayList<>();
+            BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 1));
+            BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 1));
 
-        if(BitMap.toIndex((char)(file + 1), rank + 2) != -1
-                && !checkIfSquareOccupied((char)(file + 1), rank + 2, board))
-            moves.add(BitMap.toIndex((char)(file + 1), rank + 2));
-        if(BitMap.toIndex((char)(file + 1), rank - 2) != -1
-                && !checkIfSquareOccupied((char)(file + 1), rank - 2, board))
-            moves.add(BitMap.toIndex((char)(file + 1), rank - 2));
-        if(BitMap.toIndex((char)(file - 1), rank + 2) != -1
-                && !checkIfSquareOccupied((char)(file - 1), rank + 2, board))
-            moves.add(BitMap.toIndex((char)(file - 1), rank + 2));
-        if(BitMap.toIndex((char)(file - 1), rank - 2) != -1
-                && !checkIfSquareOccupied((char)(file - 1), rank - 2, board))
-            moves.add(BitMap.toIndex((char)(file - 1), rank - 2));
-
-        if(BitMap.toIndex((char)(file + 2), rank + 1) != -1
-                && !checkIfSquareOccupied((char)(file + 2), rank + 1, board))
-            moves.add(BitMap.toIndex((char)(file + 2), rank + 1));
-        if(BitMap.toIndex((char)(file + 2), rank - 1) != -1
-                && !checkIfSquareOccupied((char)(file + 2), rank - 1, board))
-            moves.add(BitMap.toIndex((char)(file + 2), rank - 1));
-        if(BitMap.toIndex((char)(file - 2), rank + 1) != -1
-                && !checkIfSquareOccupied((char)(file - 2), rank + 1, board))
-            moves.add(BitMap.toIndex((char)(file - 2), rank + 1));
-        if(BitMap.toIndex((char)(file - 2), rank - 1) != -1
-                && !checkIfSquareOccupied((char)(file - 2), rank - 1, board))
-            moves.add(BitMap.toIndex((char)(file - 2), rank - 1));
-
-        return moves.stream().mapToInt(e -> e).toArray();
-    }
-
-    public static int[] kingMoves(char file, int rank, Board board, Board.Color color){
-        List<Integer> moves = new ArrayList<>();
-
-        if(BitMap.toIndex((char)(file + 1), rank) != -1 && !checkIfSquareOccupied((char)(file + 1), rank, board))
-            moves.add(BitMap.toIndex((char)(file + 1), rank));
-        if(BitMap.toIndex((char)(file - 1), rank) != -1 && !checkIfSquareOccupied((char)(file - 1), rank, board))
-            moves.add(BitMap.toIndex((char)(file - 1), rank));
-
-        if(BitMap.toIndex(file , rank + 1) != -1 && !checkIfSquareOccupied(file, rank + 1, board))
-            moves.add(BitMap.toIndex(file, rank + 1));
-        if(BitMap.toIndex(file , rank - 1) != -1 && !checkIfSquareOccupied(file, rank - 1, board))
-            moves.add(BitMap.toIndex(file, rank - 1));
-
-        if(BitMap.toIndex((char)(file + 1), rank + 1) != -1
-                && !checkIfSquareOccupied((char)(file + 1), rank + 1, board))
-            moves.add(BitMap.toIndex((char)(file + 1), rank + 1));
-        if(BitMap.toIndex((char)(file - 1), rank + 1) != -1
-                && !checkIfSquareOccupied((char)(file - 1), rank + 1, board))
-            moves.add(BitMap.toIndex((char)(file - 1), rank + 1));
-
-        if(BitMap.toIndex((char)(file + 1), rank - 1) != -1
-                && !checkIfSquareOccupied((char)(file + 1), rank - 1, board))
-            moves.add(BitMap.toIndex((char)(file + 1), rank - 1));
-        if(BitMap.toIndex((char)(file - 1), rank - 1) != -1
-                && !checkIfSquareOccupied((char)(file - 1), rank - 1, board))
-            moves.add(BitMap.toIndex((char)(file - 1), rank - 1));
-
-        return moves.stream().mapToInt(e -> e).toArray();
-    }
-
-    private static boolean checkIfSquareOccupied(char file, int rank, Board board){
-        boolean result = false;
-        BitMap[] pieces = board.getPieces();
-        for(BitMap piece : pieces){
-            result = result || piece.getBit(file, rank);
         }
-        return result;
+    }
+
+    static{
+        for(int i = 0; i < BOARD_SIZE; i++){
+            KING_MOVES[i] = new BitMap();
+
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) + 1));
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) - 1));
+
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) + 1));
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) - 1));
+
+            KING_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 1));
+            KING_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 1));
+
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i)));
+            KING_MOVES[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i)));
+
+        }
     }
 
 }

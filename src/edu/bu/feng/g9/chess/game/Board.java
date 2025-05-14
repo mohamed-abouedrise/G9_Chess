@@ -4,42 +4,22 @@ import edu.bu.feng.g9.chess.utils.BitMap;
 
 public class Board {
 
-    public enum Color{
-        WHITE, BLACK;
-    }
-
-    public enum Pieces{
-
-        WHITE_PAWNS(0, 0),
-        BLACK_PAWNS(1, 0),
-        WHITE_ROOKS(2, 1),
-        BLACK_ROOKS(3, 1),
-        WHITE_KNIGHTS(4, 2),
-        BLACK_KNIGHTS(5, 2),
-        WHITE_BISHOPS(6, 3),
-        BLACK_BISHOPS(7, 3),
-        WHITE_QUEEN(8, 4),
-        BLACK_QUEEN(9, 4),
-        WHITE_KING(10, 5),
-        BLACK_KING(11, 5);
-
-        private int index;
-        private int type;
-
-        Pieces(int index, int type){
-            this.index = index;
-        }
-
-        public int getIndex() {
-            return this.index;
-        }
-
-        public int getType() {
-            return this.type;
-        }
-    }
-
     private static final int NORMAL_CHESS_PIECE_TYPES = 12;
+
+    private static final int WHITE_PAWNS = 0;
+    private static final int WHITE_ROOKS = 1;
+    private static final int WHITE_KNIGHTS = 2;
+    private static final int WHITE_BISHOPS = 3;
+    private static final int WHITE_QUEEN = 4;
+    private static final int WHITE_KING = 5;
+
+    private static final int BLACK_PAWNS = 6;
+    private static final int BLACK_ROOKS = 7;
+    private static final int BLACK_KNIGHTS = 8;
+    private static final int BLACK_BISHOPS = 9;
+    private static final int BLACK_QUEEN = 10;
+    private static final int BLACK_KING = 11;
+
     private BitMap[] pieces;
 
     public Board(){
@@ -62,76 +42,84 @@ public class Board {
         return this.pieces;
     }
 
-    public static Board defaultBoard(){
+    public static Board defaultBoard() {
         Board board = new Board();
 
-        for(int i = 0; i < 8; i++)
-            board.getPieces()[Pieces.WHITE_PAWNS.getIndex()].setBit((char)(i + 'a'), 2);
+        for (int i = 0; i < 8; i++)
+            board.getPieces()[WHITE_PAWNS].setBit(8 + i);
 
-        board.getPieces()[Pieces.WHITE_ROOKS.getIndex()].setBit('a', 1);
-        board.getPieces()[Pieces.WHITE_ROOKS.getIndex()].setBit('h', 1);
+        board.getPieces()[WHITE_ROOKS].setBit(0);
+        board.getPieces()[WHITE_ROOKS].setBit(7);
 
-        board.getPieces()[Pieces.WHITE_KNIGHTS.getIndex()].setBit('b', 1);
-        board.getPieces()[Pieces.WHITE_KNIGHTS.getIndex()].setBit('g', 1);
+        board.getPieces()[WHITE_KNIGHTS].setBit(1);
+        board.getPieces()[WHITE_KNIGHTS].setBit(6);
 
-        board.getPieces()[Pieces.WHITE_BISHOPS.getIndex()].setBit('c', 1);
-        board.getPieces()[Pieces.WHITE_BISHOPS.getIndex()].setBit('f', 1);
+        board.getPieces()[WHITE_BISHOPS].setBit(2);
+        board.getPieces()[WHITE_BISHOPS].setBit(5);
 
-        board.getPieces()[Pieces.WHITE_QUEEN.getIndex()].setBit('d', 1);
-        board.getPieces()[Pieces.WHITE_KING.getIndex()].setBit('e', 1);
+        board.getPieces()[WHITE_QUEEN].setBit(3);
+        board.getPieces()[WHITE_KING].setBit(4);
 
-        for(int i = 0; i < 8; i++)
-            board.getPieces()[Pieces.BLACK_PAWNS.getIndex()].setBit((char)(i + 'a'), 7);
+        for (int i = 0; i < 8; i++)
+            board.getPieces()[BLACK_PAWNS].setBit(48 + i);
 
-        board.getPieces()[Pieces.BLACK_ROOKS.getIndex()].setBit('a', 8);
-        board.getPieces()[Pieces.BLACK_ROOKS.getIndex()].setBit('h', 8);
+        board.getPieces()[BLACK_ROOKS].setBit(56);
+        board.getPieces()[BLACK_ROOKS].setBit(63);
 
-        board.getPieces()[Pieces.BLACK_KNIGHTS.getIndex()].setBit('b', 8);
-        board.getPieces()[Pieces.BLACK_KNIGHTS.getIndex()].setBit('g', 8);
+        board.getPieces()[BLACK_KNIGHTS].setBit(57);
+        board.getPieces()[BLACK_KNIGHTS].setBit(62);
 
-        board.getPieces()[Pieces.BLACK_BISHOPS.getIndex()].setBit('c', 8);
-        board.getPieces()[Pieces.BLACK_BISHOPS.getIndex()].setBit('f', 8);
+        board.getPieces()[BLACK_BISHOPS].setBit(58);
+        board.getPieces()[BLACK_BISHOPS].setBit(61);
 
-        board.getPieces()[Pieces.BLACK_QUEEN.getIndex()].setBit('d', 8);
-        board.getPieces()[Pieces.BLACK_KING.getIndex()].setBit('e', 8);
+        board.getPieces()[BLACK_QUEEN].setBit(59);
+        board.getPieces()[BLACK_KING].setBit(60);
 
         return board;
-
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder result = new StringBuilder();
-        for(int i = 0; i < 64; i++){
-            if(this.getPieces()[Pieces.WHITE_PAWNS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("P");
-            else if(this.getPieces()[Pieces.BLACK_PAWNS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("P");
-            else if(this.getPieces()[Pieces.WHITE_ROOKS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("R");
-            else if(this.getPieces()[Pieces.BLACK_ROOKS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("R");
-            else if(this.getPieces()[Pieces.WHITE_KNIGHTS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("N");
-            else if(this.getPieces()[Pieces.BLACK_KNIGHTS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("N");
-            else if(this.getPieces()[Pieces.WHITE_BISHOPS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("B");
-            else if(this.getPieces()[Pieces.BLACK_BISHOPS.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("B");
-            else if(this.getPieces()[Pieces.WHITE_QUEEN.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("Q");
-            else if(this.getPieces()[Pieces.BLACK_QUEEN.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("Q");
-            else if(this.getPieces()[Pieces.WHITE_KING.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("K");
-            else if(this.getPieces()[Pieces.BLACK_KING.getIndex()].getBit(BitMap.getFile(i), BitMap.getRank(i)))
-                result.append("K");
-            else
-                result.append("0");
-            if((i + 1) % 8 == 0)
-                result.append("\n");
+
+        final String RESET = "\u001B[0m";
+        final String WHITE_PIECE_COLOR = "\u001B[47m";
+        final String BLACK_PIECE_COLOR = "\u001B[40m";
+
+        for (int rank = 7; rank >= 0; rank--) {
+            for (int file = 0; file < 8; file++) {
+                int i = (rank << 3) + file;
+
+                if (this.getPieces()[WHITE_PAWNS].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("P").append(RESET);
+                else if (this.getPieces()[BLACK_PAWNS].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("P").append(RESET);
+                else if (this.getPieces()[WHITE_ROOKS].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("R").append(RESET);
+                else if (this.getPieces()[BLACK_ROOKS].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("R").append(RESET);
+                else if (this.getPieces()[WHITE_KNIGHTS].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("N").append(RESET);
+                else if (this.getPieces()[BLACK_KNIGHTS].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("N").append(RESET);
+                else if (this.getPieces()[WHITE_BISHOPS].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("B").append(RESET);
+                else if (this.getPieces()[BLACK_BISHOPS].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("B").append(RESET);
+                else if (this.getPieces()[WHITE_QUEEN].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("Q").append(RESET);
+                else if (this.getPieces()[BLACK_QUEEN].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("Q").append(RESET);
+                else if (this.getPieces()[WHITE_KING].getBit(i))
+                    result.append(WHITE_PIECE_COLOR).append("K").append(RESET);
+                else if (this.getPieces()[BLACK_KING].getBit(i))
+                    result.append(BLACK_PIECE_COLOR).append("K").append(RESET);
+                else
+                    result.append(".");
+            }
+            result.append("\n");
         }
+
         return result.toString();
     }
 

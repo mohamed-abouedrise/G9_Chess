@@ -4,59 +4,51 @@ public class BitMap {
 
     private long Map;
 
-    public BitMap(){
+    public BitMap() {
         this.Map = 0L;
     }
 
-    public void setBit(char file, int rank){
-        if(validateFile(file) && validateRank(rank))
-            this.Map |= 1L << (((rank - 1) << 3) + file - 'a');
+    public void setBit(int index) {
+        if (validateIndex(index))
+            this.Map |= 1L << index;
     }
 
-    public void clearBit(char file, int rank){
-        if(validateFile(file) && validateRank(rank))
-            this.Map &= ~(1L << (((rank - 1) << 3) + file - 'a'));
+    public void clearBit(int index) {
+        if (validateIndex(index))
+            this.Map &= ~(1L << index);
     }
 
-    public boolean getBit(char file, int rank){
-        if(validateFile(file) && validateRank(rank))
-            return (this.Map >>> (((rank - 1) << 3) + file - 'a') & 1L) == 1;
-
+    public boolean getBit(int index) {
+        if (validateIndex(index))
+            return (this.Map >>> index & 1L) == 1;
         return false;
     }
 
-    private static boolean validateFile(char file) {
-        return file >= 'a' && file <= 'h';
+    public static boolean validateIndex(int index) {
+        return index >= 0 && index < 64;
     }
 
-    private static boolean validateRank(int rank){
-        return rank >= 1 && rank <= 8;
-    }
-
-    public static boolean validateIndex(int index){
-        return validateRank(getRank(index)) && validateFile(getFile(index));
-    }
-
-    public static int toIndex(char file, int rank){
-        if(validateRank(rank) && validateFile(file))
-            return ((rank - 1) << 3) + file - 'a';
+    public static int toIndex(char file, int rank) {
+        if (file >= 'a' && file <= 'h' && rank >= 1 && rank <= 8)
+            return ((rank - 1) << 3) + (file - 'a');
         return -1;
     }
 
-    public static char getFile(int index){
-        return (char) (index % 8 + 'a');
+    public static char getFile(int index) {
+        return (char) ((index % 8) + 'a');
     }
 
-    public static int getRank(int index){
-        return index / 8 + 1;
+    public static int getRank(int index) {
+        return (index / 8) + 1;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder result = new StringBuilder();
-        for(int i = 8; i > 0; i--){
-            for(int j = 0; j < 8; j++){
-                result.append(this.getBit((char)(j + 'a'), i)?"1":"0");
+        for (int rank = 7; rank >= 0; rank--) {
+            for (int file = 0; file < 8; file++) {
+                int index = (rank << 3) + file;
+                result.append(getBit(index) ? "1" : "0");
             }
             result.append("\n");
         }
