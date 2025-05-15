@@ -2,9 +2,6 @@ package edu.bu.feng.g9.chess.game;
 
 import edu.bu.feng.g9.chess.utils.BitMap;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Pieces {
 
     private static final int BOARD_SIZE = 64;

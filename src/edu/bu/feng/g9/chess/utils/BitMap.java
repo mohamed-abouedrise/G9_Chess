@@ -2,26 +2,34 @@ package edu.bu.feng.g9.chess.utils;
 
 public class BitMap {
 
-    private long Map;
+    private long map;
 
     public BitMap() {
-        this.Map = 0L;
+        this.map = 0L;
     }
 
     public void setBit(int index) {
         if (validateIndex(index))
-            this.Map |= 1L << index;
+            this.map |= 1L << index;
     }
 
     public void clearBit(int index) {
         if (validateIndex(index))
-            this.Map &= ~(1L << index);
+            this.map &= ~(1L << index);
     }
 
     public boolean getBit(int index) {
         if (validateIndex(index))
-            return (this.Map >>> index & 1L) == 1;
+            return (this.map >>> index & 1L) == 1;
         return false;
+    }
+
+    public long getValue(){
+        return this.map;
+    }
+
+    public void setValue(long value){
+        this.map = value;
     }
 
     public static boolean validateIndex(int index) {

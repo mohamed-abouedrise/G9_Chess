@@ -12,6 +12,7 @@ public class Board {
     private static final int WHITE_BISHOPS = 3;
     private static final int WHITE_QUEEN = 4;
     private static final int WHITE_KING = 5;
+    private static final int WHITE_PIECES = 12;
 
     private static final int BLACK_PAWNS = 6;
     private static final int BLACK_ROOKS = 7;
@@ -19,11 +20,14 @@ public class Board {
     private static final int BLACK_BISHOPS = 9;
     private static final int BLACK_QUEEN = 10;
     private static final int BLACK_KING = 11;
+    public static final int BLACK_PIECES = 13;
 
-    private BitMap[] pieces;
+    public static final int OCCUPIED_SQUARES = 14;
+
+    private final BitMap[] pieces;
 
     public Board(){
-        pieces = new BitMap[NORMAL_CHESS_PIECE_TYPES];
+        pieces = new BitMap[NORMAL_CHESS_PIECE_TYPES + 3];
 
         for(int i = 0; i < pieces.length; i++){
             pieces[i] = new BitMap();
@@ -31,7 +35,7 @@ public class Board {
     }
 
     public Board(int pieceTypes){
-        pieces = new BitMap[pieceTypes];
+        pieces = new BitMap[pieceTypes + 3];
 
         for(int i = 0; i < pieces.length; i++){
             pieces[i] = new BitMap();
@@ -74,6 +78,23 @@ public class Board {
 
         board.getPieces()[BLACK_QUEEN].setBit(59);
         board.getPieces()[BLACK_KING].setBit(60);
+
+        board.getPieces()[WHITE_PIECES].setValue(board.getPieces()[WHITE_PAWNS].getValue()
+                | board.getPieces()[WHITE_ROOKS].getValue()
+                | board.getPieces()[WHITE_KNIGHTS].getValue()
+                | board.getPieces()[WHITE_BISHOPS].getValue()
+                | board.getPieces()[WHITE_QUEEN].getValue()
+                | board.getPieces()[WHITE_KING].getValue());
+
+        board.getPieces()[BLACK_PIECES].setValue(board.getPieces()[BLACK_PAWNS].getValue()
+                | board.getPieces()[BLACK_ROOKS].getValue()
+                | board.getPieces()[BLACK_KNIGHTS].getValue()
+                | board.getPieces()[BLACK_BISHOPS].getValue()
+                | board.getPieces()[BLACK_QUEEN].getValue()
+                | board.getPieces()[BLACK_KING].getValue());
+
+        board.getPieces()[OCCUPIED_SQUARES].setValue(board.getPieces()[WHITE_PIECES].getValue()
+                | board.getPieces()[BLACK_PIECES].getValue());
 
         return board;
     }
