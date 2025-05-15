@@ -5,6 +5,7 @@ import edu.bu.feng.g9.chess.utils.BitMap;
 public class Board {
 
     private static final int NORMAL_CHESS_PIECE_TYPES = 12;
+    public static final int OCCUPANCY_BITMAP_NUMBER = 3;
 
     private static final int WHITE_PAWNS = 0;
     private static final int WHITE_ROOKS = 1;
@@ -27,7 +28,7 @@ public class Board {
     private final BitMap[] pieces;
 
     public Board(){
-        pieces = new BitMap[NORMAL_CHESS_PIECE_TYPES + 3];
+        pieces = new BitMap[NORMAL_CHESS_PIECE_TYPES + OCCUPANCY_BITMAP_NUMBER];
 
         for(int i = 0; i < pieces.length; i++){
             pieces[i] = new BitMap();
@@ -35,7 +36,7 @@ public class Board {
     }
 
     public Board(int pieceTypes){
-        pieces = new BitMap[pieceTypes + 3];
+        pieces = new BitMap[pieceTypes + OCCUPANCY_BITMAP_NUMBER];
 
         for(int i = 0; i < pieces.length; i++){
             pieces[i] = new BitMap();
@@ -44,6 +45,49 @@ public class Board {
 
     public BitMap[] getPieces(){
         return this.pieces;
+    }
+
+    public void updateUtilsBitMap(){
+
+        this.getPieces()[WHITE_PIECES].setValue(this.getPieces()[WHITE_PAWNS].getValue()
+                | this.getPieces()[WHITE_ROOKS].getValue()
+                | this.getPieces()[WHITE_KNIGHTS].getValue()
+                | this.getPieces()[WHITE_BISHOPS].getValue()
+                | this.getPieces()[WHITE_QUEEN].getValue()
+                | this.getPieces()[WHITE_KING].getValue());
+
+        this.getPieces()[BLACK_PIECES].setValue(this.getPieces()[BLACK_PAWNS].getValue()
+                | this.getPieces()[BLACK_ROOKS].getValue()
+                | this.getPieces()[BLACK_KNIGHTS].getValue()
+                | this.getPieces()[BLACK_BISHOPS].getValue()
+                | this.getPieces()[BLACK_QUEEN].getValue()
+                | this.getPieces()[BLACK_KING].getValue());
+
+        this.getPieces()[OCCUPIED_SQUARES].setValue(this.getPieces()[WHITE_PIECES].getValue()
+                | this.getPieces()[BLACK_PIECES].getValue());
+
+    }
+
+    public boolean isWhiteKingInCheck(){
+        int kingLocation = Long.numberOfTrailingZeros(this.getPieces()[WHITE_KING].getValue());
+
+        return (Pieces.WHITE_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[BLACK_PAWNS].getValue()) != 0
+                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[BLACK_KNIGHTS].getValue()) != 0
+                | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & (this.getPieces()[BLACK_BISHOPS].getValue() | this.getPieces()[BLACK_QUEEN].getValue())) != 0
+                | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & (this.getPieces()[BLACK_ROOKS].getValue() | this.getPieces()[BLACK_QUEEN].getValue())) != 0;
+    }
+
+    public boolean isBlackKingInCheck(){
+        int kingLocation = Long.numberOfTrailingZeros(this.getPieces()[BLACK_KING].getValue());
+
+        return (Pieces.BLACK_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[WHITE_PAWNS].getValue()) != 0
+                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[WHITE_KNIGHTS].getValue()) != 0
+                | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue())) != 0
+                | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue())) != 0;
     }
 
     public static Board defaultBoard() {
@@ -79,22 +123,7 @@ public class Board {
         board.getPieces()[BLACK_QUEEN].setBit(59);
         board.getPieces()[BLACK_KING].setBit(60);
 
-        board.getPieces()[WHITE_PIECES].setValue(board.getPieces()[WHITE_PAWNS].getValue()
-                | board.getPieces()[WHITE_ROOKS].getValue()
-                | board.getPieces()[WHITE_KNIGHTS].getValue()
-                | board.getPieces()[WHITE_BISHOPS].getValue()
-                | board.getPieces()[WHITE_QUEEN].getValue()
-                | board.getPieces()[WHITE_KING].getValue());
-
-        board.getPieces()[BLACK_PIECES].setValue(board.getPieces()[BLACK_PAWNS].getValue()
-                | board.getPieces()[BLACK_ROOKS].getValue()
-                | board.getPieces()[BLACK_KNIGHTS].getValue()
-                | board.getPieces()[BLACK_BISHOPS].getValue()
-                | board.getPieces()[BLACK_QUEEN].getValue()
-                | board.getPieces()[BLACK_KING].getValue());
-
-        board.getPieces()[OCCUPIED_SQUARES].setValue(board.getPieces()[WHITE_PIECES].getValue()
-                | board.getPieces()[BLACK_PIECES].getValue());
+        board.updateUtilsBitMap();
 
         return board;
     }
@@ -142,6 +171,11 @@ public class Board {
         }
 
         return result.toString();
+    }
+
+    public static void main(String[] args) {
+        Board b = defaultBoard();
+        System.out.println(b.isWhiteKingInCheck());
     }
 
 }

@@ -8,6 +8,10 @@ public class BitMap {
         this.map = 0L;
     }
 
+    public BitMap(long value) {
+        this.map = value;
+    }
+
     public void setBit(int index) {
         if (validateIndex(index))
             this.map |= 1L << index;
