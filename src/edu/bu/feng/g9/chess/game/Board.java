@@ -70,24 +70,23 @@ public class Board {
 
     public boolean isWhiteKingInCheck(){
         int kingLocation = Long.numberOfTrailingZeros(this.getPieces()[WHITE_KING].getValue());
-
-        return (Pieces.WHITE_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[BLACK_PAWNS].getValue()) != 0
-                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[BLACK_KNIGHTS].getValue()) != 0
+        return ((Pieces.WHITE_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[BLACK_PAWNS].getValue())
+                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[BLACK_KNIGHTS].getValue())
                 | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[BLACK_BISHOPS].getValue() | this.getPieces()[BLACK_QUEEN].getValue())) != 0
+                & (this.getPieces()[BLACK_BISHOPS].getValue() | this.getPieces()[BLACK_QUEEN].getValue()))
                 | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[BLACK_ROOKS].getValue() | this.getPieces()[BLACK_QUEEN].getValue())) != 0;
+                & (this.getPieces()[BLACK_ROOKS].getValue() | this.getPieces()[BLACK_QUEEN].getValue()))) != 0;
     }
 
     public boolean isBlackKingInCheck(){
         int kingLocation = Long.numberOfTrailingZeros(this.getPieces()[BLACK_KING].getValue());
 
-        return (Pieces.BLACK_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[WHITE_PAWNS].getValue()) != 0
-                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[WHITE_KNIGHTS].getValue()) != 0
+        return ((Pieces.BLACK_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[WHITE_PAWNS].getValue())
+                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[WHITE_KNIGHTS].getValue())
                 | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue())) != 0
+                & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))
                 | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue())) != 0;
+                & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))) != 0;
     }
 
     public static Board defaultBoard() {
@@ -175,6 +174,7 @@ public class Board {
 
     public static void main(String[] args) {
         Board b = defaultBoard();
+        System.out.println(b);
         System.out.println(b.isWhiteKingInCheck());
     }
 
