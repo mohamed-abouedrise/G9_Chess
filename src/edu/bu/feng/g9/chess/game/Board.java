@@ -2,6 +2,9 @@ package edu.bu.feng.g9.chess.game;
 
 import edu.bu.feng.g9.chess.utils.BitMap;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class Board {
 
     private static final int NORMAL_CHESS_PIECE_TYPES = 12;
@@ -24,6 +27,19 @@ public class Board {
     public static final int BLACK_PIECES = 13;
 
     public static final int OCCUPIED_SQUARES = 14;
+
+    public static final Image WHITE_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_King.png")).getImage();
+    private static final Image WHITE_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Queen.png")).getImage();
+    private static final Image WHITE_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Bishop.png")).getImage();
+    private static final Image WHITE_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Knight.png")).getImage();
+    private static final Image WHITE_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Pawn.png")).getImage();
+    private static final Image WHITE_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Rook.png")).getImage();
+    private static final Image BLACK_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_King.png")).getImage();
+    private static final Image BLACK_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Queen.png")).getImage();
+    private static final Image BLACK_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Bishop.png")).getImage();
+    private static final Image BLACK_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Knight.png")).getImage();
+    private static final Image BLACK_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Pawn.png")).getImage();
+    private static final Image BLACK_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Rook.png")).getImage();
 
     private final BitMap[] pieces;
 
@@ -87,6 +103,55 @@ public class Board {
                 & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))
                 | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
                 & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))) != 0;
+    }
+
+    public Image getPiece(int x, int y){
+        y++;
+        if(this.getPieces()[WHITE_PAWNS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_PAWN_IMAGE;
+
+        if(this.getPieces()[BLACK_PAWNS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_PAWN_IMAGE;
+
+        if(this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_ROOK_IMAGE;
+
+        if(this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_ROOK_IMAGE;
+
+        if(this.getPieces()[WHITE_KNIGHTS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_KNIGHT_IMAGE;
+
+        if(this.getPieces()[BLACK_KNIGHTS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_KNIGHT_IMAGE;
+
+        if(this.getPieces()[WHITE_BISHOPS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_BISHOP_IMAGE;
+
+        if(this.getPieces()[BLACK_BISHOPS].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_BISHOP_IMAGE;
+
+        if(this.getPieces()[WHITE_QUEEN].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_QUEEN_IMAGE;
+
+        if(this.getPieces()[BLACK_QUEEN].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_QUEEN_IMAGE;
+
+        if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.WHITE_KING_IMAGE;
+
+        if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex((char)('a' + x), y)))
+            return Board.BLACK_KING_IMAGE;
+
+        return null;
+    }
+
+    public boolean isWhiteKing(int x, int y){
+        return this.getPieces()[WHITE_KING].getBit(BitMap.toIndex((char) ('a' + x), y + 1));
+    }
+
+    public boolean isBlackKing(int x, int y){
+        return this.getPieces()[BLACK_KING].getBit(BitMap.toIndex((char) ('a' + x), y + 1));
     }
 
     public static Board defaultBoard() {
@@ -170,12 +235,6 @@ public class Board {
         }
 
         return result.toString();
-    }
-
-    public static void main(String[] args) {
-        Board b = defaultBoard();
-        System.out.println(b);
-        System.out.println(b.isWhiteKingInCheck());
     }
 
 }
