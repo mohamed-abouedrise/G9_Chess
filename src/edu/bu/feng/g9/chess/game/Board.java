@@ -158,13 +158,15 @@ public class Board {
             return null;
 
         if(this.getPieces()[WHITE_PAWNS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap((Pieces.WHITE_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+            return new BitMap(((Pieces.WHITE_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[OCCUPIED_SQUARES].getValue())
                     | (Pieces.WHITE_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() &
                     this.getPieces()[BLACK_PIECES].getValue()))
                     & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
 
         if(this.getPieces()[BLACK_PAWNS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap((Pieces.BLACK_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+            return new BitMap(((Pieces.BLACK_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[OCCUPIED_SQUARES].getValue())
                     | (Pieces.BLACK_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue()
                     & this.getPieces()[WHITE_PIECES].getValue()))
                     & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
