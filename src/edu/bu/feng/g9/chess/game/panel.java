@@ -22,7 +22,8 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
     
         private Point startingPoint;
         private Point currentPoint;
-
+        
+        private int[] moves;
         
         
     
@@ -51,6 +52,10 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
                 g2d.fillRect(n * 150 + 75 * ((i) % 2), i * 75, 75, 75);
             }
         }
+        
+        
+        
+        
 
         g2d.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         g2d.setPaint(Color.black);
@@ -102,9 +107,11 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         g2d.drawString("h", 585, 590);
 
         
-        
-        
-        
+        if (moves!=null){
+            for (int i:moves){
+//                g2d.drawImage(this.board.getMoveImage(i), i, i, WIDTH, HEIGHT, null)
+            }
+        }
         
         
         
@@ -153,12 +160,18 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         
         
         
+        
+        
+        
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
 
 
+        
+        
+        
     }
 
     @Override
@@ -166,14 +179,17 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
 
         startingPoint=e.getPoint();
         
-        
+//      moves=this.board.getMoves();
+        repaint();
 
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
+//        this.board.movePiece();
         currentPoint=null;
+        
+//        moves =null;        
         repaint();
         
         
