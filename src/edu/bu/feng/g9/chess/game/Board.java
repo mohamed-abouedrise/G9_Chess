@@ -219,8 +219,8 @@ public class Board {
 
     }
 
-    public Image getMoveImage(int i) {
-        if(this.getPieces()[OCCUPIED_SQUARES].getBit(i))
+    public Image getMoveImage(int end, int start) {
+        if(this.getPieces()[OCCUPIED_SQUARES].getBit(end))
             return CAPTURE_PIECE;
         else
             return MOVE_PIECE;

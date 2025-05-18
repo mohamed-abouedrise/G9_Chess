@@ -103,7 +103,9 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
 
         if (moves!=null){
             for (int i : moves){
-                g2d.drawImage(this.board.getMoveImage(i), i % 8 * 75 + 3, (7 - i / 8) * 75 + 3, 69, 69, null);
+                g2d.drawImage(this.board.getMoveImage(i, BitMap.toIndex((char)(((int) (startingPoint.getX()/75)) + 'a')
+                        , 7 - (int) (startingPoint.getY()/75)))
+                        , i % 8 * 75 + 3, (7 - i / 8) * 75 + 3, 69, 69, null);
             }
         }
         
@@ -126,8 +128,8 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         }
 
         if (currentPoint!=null){
-            int x=(int) (startingPoint.getX()/75);
-            int y=7 - (int) (startingPoint.getY()/75);
+            int x = (int) (startingPoint.getX()/75);
+            int y = 7 - (int) (startingPoint.getY()/75);
 
             if(this.board.isWhiteKing(x, y))
                 g2d.drawImage(this.board.getPiece(x, y), (int) currentPoint.getX()-34, (int)currentPoint.getY()-32, 69, 64, null);
