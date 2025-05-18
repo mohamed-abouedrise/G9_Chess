@@ -27,8 +27,8 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
     private int[] moves;
     
     public panel(){
-        this.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
-        
+//        this.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        this.setSize(2000, 750);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
     }
@@ -174,6 +174,7 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         currentPoint=null;
         moves =null;
         repaint();
+        SoundPlayer.playSound("check");
         
     }
 
