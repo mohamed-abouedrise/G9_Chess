@@ -1,5 +1,8 @@
 package edu.bu.feng.g9.chess.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BitMap {
 
     private long map;
@@ -34,6 +37,19 @@ public class BitMap {
 
     public void setValue(long value){
         this.map = value;
+    }
+
+    public int[] toIntArray() {
+        int count = 0;
+        for (int i = 0; i < 64; i++) {
+            if (this.getBit(i)) count++;
+        }
+        int[] result = new int[count];
+        int index = 0;
+        for (int i = 0; i < 64; i++) {
+            if (this.getBit(i)) result[index++] = i;
+        }
+        return result;
     }
 
     public static boolean validateIndex(int index) {

@@ -28,18 +28,21 @@ public class Board {
 
     public static final int OCCUPIED_SQUARES = 14;
 
-    public static final Image WHITE_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_King.png")).getImage();
-    private static final Image WHITE_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Queen.png")).getImage();
-    private static final Image WHITE_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Bishop.png")).getImage();
-    private static final Image WHITE_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Knight.png")).getImage();
-    private static final Image WHITE_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Pawn.png")).getImage();
-    private static final Image WHITE_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/White_Rook.png")).getImage();
-    private static final Image BLACK_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_King.png")).getImage();
-    private static final Image BLACK_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Queen.png")).getImage();
-    private static final Image BLACK_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Bishop.png")).getImage();
-    private static final Image BLACK_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Knight.png")).getImage();
-    private static final Image BLACK_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Pawn.png")).getImage();
-    private static final Image BLACK_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/images/Black_Rook.png")).getImage();
+    public static final Image WHITE_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_King.png")).getImage();
+    private static final Image WHITE_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_Queen.png")).getImage();
+    private static final Image WHITE_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_Bishop.png")).getImage();
+    private static final Image WHITE_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_Knight.png")).getImage();
+    private static final Image WHITE_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_Pawn.png")).getImage();
+    private static final Image WHITE_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/White_Rook.png")).getImage();
+    private static final Image BLACK_KING_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_King.png")).getImage();
+    private static final Image BLACK_QUEEN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_Queen.png")).getImage();
+    private static final Image BLACK_BISHOP_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_Bishop.png")).getImage();
+    private static final Image BLACK_KNIGHT_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_Knight.png")).getImage();
+    private static final Image BLACK_PAWN_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_Pawn.png")).getImage();
+    private static final Image BLACK_ROOK_IMAGE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Black_Rook.png")).getImage();
+
+    private static final Image MOVE_PIECE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Move_Piece.png")).getImage();
+    private static final Image CAPTURE_PIECE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Capture_Piece.png")).getImage();
 
     private final BitMap[] pieces;
 
@@ -146,6 +149,83 @@ public class Board {
         return null;
     }
 
+    public int[] getMoves(int x, int y){
+
+        y++;
+        char file = (char) (x + 'a');
+
+        if(!this.getPieces()[OCCUPIED_SQUARES].getBit(BitMap.toIndex(file, y)))
+            return null;
+
+        if(this.getPieces()[WHITE_PAWNS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap((Pieces.WHITE_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                    | (Pieces.WHITE_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() &
+                    this.getPieces()[BLACK_PIECES].getValue()))
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_PAWNS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap((Pieces.BLACK_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                    | (Pieces.BLACK_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue()
+                    & this.getPieces()[WHITE_PIECES].getValue()))
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[WHITE_KNIGHTS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_KNIGHTS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getRookAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getRookAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[WHITE_BISHOPS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getBishopAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_BISHOPS].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getBishopAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[WHITE_QUEEN].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_QUEEN].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+
+        if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex(file, y)))
+            return new BitMap(Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
+                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+
+        return null;
+
+    }
+
+    public Image getMoveImage(int i) {
+        if(this.getPieces()[OCCUPIED_SQUARES].getBit(i))
+            return CAPTURE_PIECE;
+        else
+            return MOVE_PIECE;
+    }
+
     public boolean isWhiteKing(int x, int y){
         return this.getPieces()[WHITE_KING].getBit(BitMap.toIndex((char) ('a' + x), y + 1));
     }
@@ -235,6 +315,29 @@ public class Board {
         }
 
         return result.toString();
+    }
+
+    public void movePiece(int startingSquare, int endSquare) {
+        int pieceType = -1;
+        for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
+            if (this.getPieces()[i].getBit(startingSquare)) {
+                this.getPieces()[i].clearBit(startingSquare);
+                this.updateUtilsBitMap();
+                pieceType = i;
+            }
+        }
+
+        if (this.getPieces()[OCCUPIED_SQUARES].getBit(endSquare)){
+            for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
+                if (this.getPieces()[i].getBit(endSquare)) {
+                    this.getPieces()[i].clearBit(endSquare);
+                }
+            }
+        }
+        this.getPieces()[pieceType].setBit(endSquare);
+
+        this.updateUtilsBitMap();
+
     }
 
 }
