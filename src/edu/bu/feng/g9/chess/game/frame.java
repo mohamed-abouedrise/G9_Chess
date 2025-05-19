@@ -1,5 +1,6 @@
 package edu.bu.feng.g9.chess.game;
 
+import java.awt.Color;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -17,6 +18,7 @@ public class frame extends JFrame{
         pauseButton=new button2();
         sittingButton=new buttonsitting();
         newGameButton=new button1();
+        this.getContentPane().setBackground(new Color(0x252321));
         
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);
