@@ -16,6 +16,7 @@ public class Pieces {
     public static final BitMap[] BISHOP_MASKS = new BitMap[64];
     public static final BitMap[][] ROOK_ATTACKS = new BitMap[64][];
     public static final BitMap[][] BISHOP_ATTACKS = new BitMap[64][];
+    public static final BitMap[][] KING_PIN_MASKS = new BitMap[8][64];
 
     public static final long[] ROOK_MAGICS = {
             0xa8002c000108020L, 0x6c00049b0002001L, 0x100200010090040L, 0x2480041000800801L,
@@ -100,9 +101,6 @@ public class Pieces {
         for(int i = 0; i < BOARD_SIZE; i++){
             WHITE_PAWN_CAPTURE[i] = new BitMap();
 
-            if(BitMap.getRank(i) == 8)
-                continue;
-
             WHITE_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) + 1));
             WHITE_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) + 1));
 
@@ -112,14 +110,6 @@ public class Pieces {
     static{
         for(int i = 0; i < BOARD_SIZE; i++){
             WHITE_PAWN_MOVES[i] = new BitMap();
-
-            if(BitMap.getRank(i) == 8)
-                continue;
-
-            if(BitMap.getRank(i) == 2){
-                WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 2));
-                WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 2));
-            }
 
             WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 1));
             WHITE_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) + 1));
@@ -131,9 +121,6 @@ public class Pieces {
         for(int i = 0; i < BOARD_SIZE; i++){
             BLACK_PAWN_CAPTURE[i] = new BitMap();
 
-            if(BitMap.getRank(i) == 1)
-                continue;
-
             BLACK_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) + 1), BitMap.getRank(i) - 1));
             BLACK_PAWN_CAPTURE[i].setBit(BitMap.toIndex((char)(BitMap.getFile(i) - 1), BitMap.getRank(i) - 1));
 
@@ -143,14 +130,6 @@ public class Pieces {
     static{
         for(int i = 0; i < BOARD_SIZE; i++){
             BLACK_PAWN_MOVES[i] = new BitMap();
-
-            if(BitMap.getRank(i) == 1)
-                continue;
-
-            if(BitMap.getRank(i) == 7){
-                BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 2));
-                BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 2));
-            }
 
             BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 1));
             BLACK_PAWN_MOVES[i].setBit(BitMap.toIndex(BitMap.getFile(i), BitMap.getRank(i) - 1));
@@ -263,6 +242,55 @@ public class Pieces {
                 long index = (occupancy * BISHOP_MAGICS[square]) >>> BISHOP_SHIFTS[square];
                 BISHOP_ATTACKS[square][(int)index] = new BitMap();
                 BISHOP_ATTACKS[square][(int)index].setValue(attacks);
+            }
+        }
+    }
+
+    static{
+        for(int i = 0; i < 64; i++){
+
+            char file = BitMap.getFile(i);
+            int rank = BitMap.getRank(i);
+
+            KING_PIN_MASKS[0][i] = new BitMap();
+            KING_PIN_MASKS[1][i] = new BitMap();
+            KING_PIN_MASKS[2][i] = new BitMap();
+            KING_PIN_MASKS[3][i] = new BitMap();
+            KING_PIN_MASKS[4][i] = new BitMap();
+            KING_PIN_MASKS[5][i] = new BitMap();
+            KING_PIN_MASKS[6][i] = new BitMap();
+            KING_PIN_MASKS[7][i] = new BitMap();
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[0][i].setBit(BitMap.toIndex(file, rank + j));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[1][i].setBit(BitMap.toIndex((char)(file + j), rank + j));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[2][i].setBit(BitMap.toIndex((char)(file + j), rank));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[3][i].setBit(BitMap.toIndex((char)(file + j), rank - j));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[4][i].setBit(BitMap.toIndex(file, rank - j));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[5][i].setBit(BitMap.toIndex((char)(file - j), rank - j));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[6][i].setBit(BitMap.toIndex((char)(file - j), rank));
+            }
+
+            for(int j = 1; j <= 8 - rank; j++){
+                KING_PIN_MASKS[7][i].setBit(BitMap.toIndex((char)(file - j), rank + j));
             }
         }
     }

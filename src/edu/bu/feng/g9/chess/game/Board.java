@@ -45,6 +45,9 @@ public class Board {
     private static final Image CAPTURE_PIECE = new ImageIcon(Board.class.getResource("/edu/bu/feng/g9/chess/resources/Capture_Piece.png")).getImage();
 
     private final BitMap[] pieces;
+    private boolean isWhiteTurn = true;
+    private byte castleRights = 0x0F;
+    private int enPassent;
 
     public Board(){
         pieces = new BitMap[NORMAL_CHESS_PIECE_TYPES + OCCUPANCY_BITMAP_NUMBER];
@@ -56,7 +59,6 @@ public class Board {
 
     public Board(int pieceTypes){
         pieces = new BitMap[pieceTypes + OCCUPANCY_BITMAP_NUMBER];
-
         for(int i = 0; i < pieces.length; i++){
             pieces[i] = new BitMap();
         }
@@ -157,68 +159,631 @@ public class Board {
         if(!this.getPieces()[OCCUPIED_SQUARES].getBit(BitMap.toIndex(file, y)))
             return null;
 
-        if(this.getPieces()[WHITE_PAWNS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(((Pieces.WHITE_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[OCCUPIED_SQUARES].getValue())
-                    | (Pieces.WHITE_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() &
-                    this.getPieces()[BLACK_PIECES].getValue()))
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[WHITE_PAWNS].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhitePawnMoves(y, file);
 
-        if(this.getPieces()[BLACK_PAWNS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(((Pieces.BLACK_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[OCCUPIED_SQUARES].getValue())
-                    | (Pieces.BLACK_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue()
-                    & this.getPieces()[WHITE_PIECES].getValue()))
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[BLACK_PAWNS].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackPawnMoves(y, file);
 
-        if(this.getPieces()[WHITE_KNIGHTS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[WHITE_KNIGHTS].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhiteKnightMoves(y, file);
 
-        if(this.getPieces()[BLACK_KNIGHTS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
 
-        if(this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getRookAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[BLACK_KNIGHTS].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackKnightMoves(y, file);
 
-        if(this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getRookAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhiteRookMoves(y, file);
 
-        if(this.getPieces()[WHITE_BISHOPS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getBishopAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
 
-        if(this.getPieces()[BLACK_BISHOPS].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getBishopAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackRookMoves(y, file);
 
-        if(this.getPieces()[WHITE_QUEEN].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getQueenAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[WHITE_BISHOPS].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhiteBishopMoves(y, file);
 
-        if(this.getPieces()[BLACK_QUEEN].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.getQueenAttacks(BitMap.toIndex(file, y)
-                    , this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[BLACK_BISHOPS].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackBishopMoves(y, file);
 
-        if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[WHITE_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[WHITE_QUEEN].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhiteQueenMoves(y, file);
 
-        if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex(file, y)))
-            return new BitMap(Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
-                    & ~this.getPieces()[BLACK_PIECES].getValue()).toIntArray();
+        if(this.getPieces()[BLACK_QUEEN].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackQueenMoves(y, file);
+
+        if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex(file, y)) && isWhiteTurn)
+            return getWhiteKingMoves(y, file);
+
+        if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex(file, y)) && !isWhiteTurn)
+            return getBlackKingMoves(y, file);
 
         return null;
 
+    }
+
+    private int[] getBlackKingMoves(int y, char file) {
+        long attackMap = this.attackBitMap().getValue();
+        BitMap castleSquares = new BitMap();
+        castleSquares.setBit(BitMap.toIndex('f', 8));
+        castleSquares.setBit(BitMap.toIndex('g', 8));
+        castleSquares.setBit(BitMap.toIndex('b', 8));
+        castleSquares.setBit(BitMap.toIndex('c', 8));
+        castleSquares.setBit(BitMap.toIndex('d', 8));
+
+        long castle = 0L;
+        if((castleRights & (1 << 2)) != 0) {
+            castle |= 1L << 62;
+        }
+        if((castleRights & (1 << 3)) != 0) {
+            castle |= 1L << 58;
+        }
+
+
+        castle &= castleSquares.getValue() & ~attackMap & ~this.getPieces()[BLACK_PIECES].getValue();
+        return new BitMap(((Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[BLACK_PIECES].getValue())
+                & ~attackMap)
+                | castle).toIntArray();
+    }
+
+    private int[] getWhiteKingMoves(int y, char file) {
+        long attackMap = this.attackBitMap().getValue();
+        BitMap castleSquares = new BitMap();
+        castleSquares.setBit(BitMap.toIndex('f', 1));
+        castleSquares.setBit(BitMap.toIndex('g', 1));
+        castleSquares.setBit(BitMap.toIndex('b', 1));
+        castleSquares.setBit(BitMap.toIndex('c', 1));
+        castleSquares.setBit(BitMap.toIndex('d', 1));
+
+        long castle = 0L;
+        if((castleRights & 1) != 0) {
+            castle |= 1L << 6;
+        }
+        if((castleRights & (1 << 1)) != 0) {
+            castle |= 1L << 2;
+        }
+
+
+        castle &= castleSquares.getValue() & ~attackMap & ~this.getPieces()[WHITE_PIECES].getValue();
+        return new BitMap(((Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[WHITE_PIECES].getValue())
+                & ~attackMap)
+                | castle).toIntArray();
+    }
+
+    private int[] getBlackQueenMoves(int y, char file) {
+        long moves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[BLACK_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[BLACK_KING].getValue();
+        long whitePiecesDiagonals = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_BISHOPS].getValue());
+        long whitePiecesLines = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (whitePiecesDiagonals | whitePiecesLines)) != 0L){
+            if(((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getWhiteQueenMoves(int y, char file) {
+        long moves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[WHITE_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[WHITE_KING].getValue();
+        long blackPiecesDiagonals = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_BISHOPS].getValue());
+        long blackPiecesLines = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (blackPiecesDiagonals | blackPiecesLines)) != 0L){
+            if(((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getBlackBishopMoves(int y, char file) {
+        long moves = Pieces.getBishopAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[BLACK_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[BLACK_KING].getValue();
+        long whitePiecesDiagonals = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_BISHOPS].getValue());
+        long whitePiecesLines = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (whitePiecesDiagonals | whitePiecesLines)) != 0L){
+            boolean isPinnedLine = ((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedLine)
+                return new BitMap(0L).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getWhiteBishopMoves(int y, char file) {
+        long moves = Pieces.getBishopAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[WHITE_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[WHITE_KING].getValue();
+        long blackPiecesDiagonals = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_BISHOPS].getValue());
+        long blackPiecesLines = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (blackPiecesDiagonals | blackPiecesLines)) != 0L){
+            boolean isPinnedLine = ((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedLine)
+                return new BitMap(0L).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getBlackRookMoves(int y, char file) {
+        long moves = Pieces.getRookAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[BLACK_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[BLACK_KING].getValue();
+        long whitePiecesDiagonals = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_BISHOPS].getValue());
+        long whitePiecesLines = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (whitePiecesDiagonals | whitePiecesLines)) != 0L){
+            boolean isPinnedDiagonal = ((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedDiagonal)
+                return new BitMap(0L).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getWhiteRookMoves(int y, char file) {
+        long moves = Pieces.getRookAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                & ~this.getPieces()[WHITE_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[WHITE_KING].getValue();
+        long blackPiecesDiagonals = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_BISHOPS].getValue());
+        long blackPiecesLines = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (blackPiecesDiagonals | blackPiecesLines)) != 0L){
+            boolean isPinnedDiagonal = ((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedDiagonal)
+                return new BitMap(0L).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            if(((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L))
+                return new BitMap(moves & (Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()
+                        | Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue())).toIntArray();
+            return new BitMap(moves).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getBlackKnightMoves(int y, char file) {
+        long moves = Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[BLACK_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[BLACK_KING].getValue();
+        long whitePiecesDiagonals = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_BISHOPS].getValue());
+        long whitePiecesLines = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (whitePiecesDiagonals | whitePiecesLines)) != 0L){
+            boolean isPinnedLine = ((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0);
+            boolean isPinnedDiagonal = ((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedDiagonal | isPinnedLine)
+                return new BitMap(0L).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getWhiteKnightMoves(int y, char file) {
+        long moves = Pieces.KNIGHT_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[WHITE_PIECES].getValue();
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[WHITE_KING].getValue();
+        long blackPiecesDiagonals = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_BISHOPS].getValue());
+        long blackPiecesLines = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (blackPiecesDiagonals | blackPiecesLines)) != 0L){
+            boolean isPinnedLine = ((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0);
+            boolean isPinnedDiagonal = ((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L)
+                    | ((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0)
+                    | ((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0);
+            if(isPinnedDiagonal | isPinnedLine)
+                return new BitMap(0L).toIntArray();
+        }
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getBlackPawnMoves(int y, char file) {
+        long singlePush = (Pieces.BLACK_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[OCCUPIED_SQUARES].getValue());
+        long doublePush = 0L;
+        if(y == 7)
+            doublePush = singlePush >> 8;
+
+        long enPassentCapture = 0L;
+        if(y == BitMap.getRank(this.enPassent)
+                && (file + 1 == BitMap.getFile(this.enPassent) | file - 1 == BitMap.getFile(this.enPassent))){
+            enPassentCapture = Pieces.BLACK_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() & (1L << (enPassent - 8));
+        }
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[BLACK_KING].getValue();
+        if(enPassentCapture != 0){
+            long slidingPieces = this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue();
+            long queenEnPassentMoves = Pieces.getQueenAttacks(enPassent
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+
+            if((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenEnPassentMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenEnPassentMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((queenEnPassentMoves & this.getPieces()[WHITE_KING].getValue()
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((queenEnPassentMoves & this.getPieces()[WHITE_KING].getValue()
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }}
+
+        long moves = ((singlePush | doublePush)
+                | enPassentCapture
+                | (Pieces.BLACK_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue()
+                & this.getPieces()[WHITE_PIECES].getValue()))
+                & ~this.getPieces()[BLACK_PIECES].getValue();
+
+        long whitePiecesDiagonals = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_BISHOPS].getValue());
+        long whitePiecesLines = queenMoves
+                & (this.getPieces()[WHITE_QUEEN].getValue() | this.getPieces()[WHITE_ROOKS].getValue());
+
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (whitePiecesDiagonals | whitePiecesLines)) != 0L){
+
+            if((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(0L)
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(0L)
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (whitePiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+        }
+
+        return new BitMap(moves).toIntArray();
+    }
+
+    private int[] getWhitePawnMoves(int y, char file) {
+        long singlePush = (Pieces.WHITE_PAWN_MOVES[BitMap.toIndex(file, y)].getValue()
+                & ~this.getPieces()[OCCUPIED_SQUARES].getValue());
+        long doublePush = 0L;
+        if(y == 2)
+            doublePush = singlePush << 8;
+
+        long enPassentCapture = 0L;
+        if(y == BitMap.getRank(this.enPassent)
+                && (file + 1 == BitMap.getFile(this.enPassent) | file - 1 == BitMap.getFile(this.enPassent))){
+            enPassentCapture = Pieces.WHITE_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() & (1L << (enPassent + 8));
+        }
+
+        long queenMoves = Pieces.getQueenAttacks(BitMap.toIndex(file, y)
+                , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+        long king = queenMoves & this.getPieces()[WHITE_KING].getValue();
+        if(enPassentCapture != 0){
+            long slidingPieces = this.getPieces()[BLACK_ROOKS].getValue() | this.getPieces()[BLACK_QUEEN].getValue();
+            long queenEnPassentMoves = Pieces.getQueenAttacks(enPassent
+                    , this.getPieces()[OCCUPIED_SQUARES]).getValue();
+
+            if((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenEnPassentMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenEnPassentMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((queenEnPassentMoves & this.getPieces()[WHITE_KING].getValue()
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+            }else if((queenEnPassentMoves & this.getPieces()[WHITE_KING].getValue()
+                    & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0
+                    && (queenMoves & slidingPieces
+                    & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0){
+                enPassentCapture = 0L;
+        }}
+        long moves = ((singlePush | doublePush)
+                | enPassentCapture
+                | (Pieces.WHITE_PAWN_CAPTURE[BitMap.toIndex(file, y)].getValue() &
+                this.getPieces()[BLACK_PIECES].getValue()))
+                & ~this.getPieces()[WHITE_PIECES].getValue();
+
+        long blackPiecesDiagonals = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_BISHOPS].getValue());
+        long blackPiecesLines = queenMoves
+                & (this.getPieces()[BLACK_QUEEN].getValue() | this.getPieces()[BLACK_ROOKS].getValue());
+        if(king == 0L)
+            return new BitMap(moves).toIntArray();
+        else if((queenMoves & (blackPiecesDiagonals | blackPiecesLines)) != 0L){
+
+            if((king & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[4][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[0][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(0L)
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[6][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesLines & Pieces.KING_PIN_MASKS[2][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(0L)
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[5][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[1][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+            if((king & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue()) != 0L
+                    && (blackPiecesDiagonals & Pieces.KING_PIN_MASKS[3][BitMap.toIndex(file, y)].getValue()) != 0L){
+                return new BitMap(moves & Pieces.KING_PIN_MASKS[7][BitMap.toIndex(file, y)].getValue())
+                        .toIntArray();
+            }
+
+        }
+
+        return new BitMap(moves).toIntArray();
     }
 
     public Image getMoveImage(int end, int start) {
@@ -228,12 +793,226 @@ public class Board {
             return MOVE_PIECE;
     }
 
+    public boolean movePiece(int startingSquare, int endSquare) {
+        int pieceType = -1;
+
+        if(this.getPieces()[WHITE_PAWNS].getBit(startingSquare) && BitMap.getRank(startingSquare) == 2
+                && BitMap.getRank(endSquare) == 4)
+            this.enPassent = endSquare;
+        else if(this.getPieces()[BLACK_PIECES].getBit(startingSquare) && BitMap.getRank(startingSquare) == 7
+                && BitMap.getRank(endSquare) == 5)
+            this.enPassent = endSquare;
+        else
+            this.enPassent = -1;
+
+        if(BitMap.getRank(endSquare) == 8 && this.getPieces()[WHITE_PAWNS].getBit(startingSquare)){
+            return true;
+        }
+
+        if(BitMap.getRank(endSquare) == 1 && this.getPieces()[BLACK_PIECES].getBit(startingSquare)){
+            return true;
+        }
+
+        if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex(BitMap.getFile(startingSquare), BitMap.getRank(startingSquare)))){
+            if(endSquare == BitMap.toIndex('g', 1) && (castleRights & 1) != 0){
+                pieceType = WHITE_KING;
+                this.getPieces()[WHITE_KING].clearBit(startingSquare);
+                this.getPieces()[WHITE_ROOKS].clearBit(BitMap.toIndex('h', 1));
+                this.getPieces()[WHITE_ROOKS].setBit(BitMap.toIndex('f', 1));
+            }else if(endSquare == BitMap.toIndex('c', 1) && (castleRights & 1 << 1) != 0){
+                pieceType = WHITE_KING;
+                this.getPieces()[WHITE_KING].clearBit(startingSquare);
+                this.getPieces()[WHITE_ROOKS].clearBit(BitMap.toIndex('a', 1));
+                this.getPieces()[WHITE_ROOKS].setBit(BitMap.toIndex('d', 1));
+            }
+        }
+
+        if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex(BitMap.getFile(startingSquare), BitMap.getRank(startingSquare)))){
+            if(endSquare == BitMap.toIndex('g', 8) && (castleRights & 1 << 2) != 0){
+                pieceType = BLACK_KING;
+                this.getPieces()[BLACK_KING].clearBit(startingSquare);
+                this.getPieces()[BLACK_ROOKS].clearBit(BitMap.toIndex('h', 8));
+                this.getPieces()[BLACK_ROOKS].setBit(BitMap.toIndex('f', 8));
+            }else if(endSquare == BitMap.toIndex('c', 8) && (castleRights & 1 << 3) != 0){
+                pieceType = BLACK_KING;
+                this.getPieces()[BLACK_KING].clearBit(startingSquare);
+                this.getPieces()[BLACK_ROOKS].clearBit(BitMap.toIndex('a', 8));
+                this.getPieces()[BLACK_ROOKS].setBit(BitMap.toIndex('d', 8));
+            }
+        }
+
+        for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
+            if (this.getPieces()[i].getBit(startingSquare)) {
+                this.getPieces()[i].clearBit(startingSquare);
+                this.updateUtilsBitMap();
+                pieceType = i;
+            }
+        }
+
+        if (this.getPieces()[OCCUPIED_SQUARES].getBit(endSquare)){
+            for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
+                if (this.getPieces()[i].getBit(endSquare)) {
+                    this.getPieces()[i].clearBit(endSquare);
+                }
+            }
+        }
+        this.getPieces()[pieceType].setBit(endSquare);
+        this.isWhiteTurn = !isWhiteTurn;
+        this.updateUtilsBitMap();
+        testCastleRights();
+        return false;
+
+    }
+
+    private void testCastleRights() {
+        if(!this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex('h', 1)))
+            this.castleRights &= ~1;
+
+        if(!this.getPieces()[WHITE_ROOKS].getBit(BitMap.toIndex('a', 1)))
+            this.castleRights &= ~(1 << 1);
+
+        if(!this.getPieces()[WHITE_KING].getBit(BitMap.toIndex('e', 1)))
+            this.castleRights &= ~(1 | 1 << 1);
+
+        if(!this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex('h', 8)))
+            this.castleRights &= ~(1 << 2);
+
+        if(!this.getPieces()[BLACK_ROOKS].getBit(BitMap.toIndex('a', 8)))
+            this.castleRights &= ~(1 << 3);
+
+        if(!this.getPieces()[BLACK_KING].getBit(BitMap.toIndex('e', 8)))
+            this.castleRights &= ~(1 << 2 | 1 << 3);
+    }
+
     public boolean isWhiteKing(int x, int y){
         return this.getPieces()[WHITE_KING].getBit(BitMap.toIndex((char) ('a' + x), y + 1));
     }
 
     public boolean isBlackKing(int x, int y){
         return this.getPieces()[BLACK_KING].getBit(BitMap.toIndex((char) ('a' + x), y + 1));
+    }
+
+    public int getKingIndex(){
+
+        int colorSpecificOffset = 0;
+        if(!isWhiteTurn)
+            colorSpecificOffset = 6;
+
+        return Long.numberOfTrailingZeros(this.getPieces()[WHITE_KING + colorSpecificOffset].getValue());
+    }
+
+    public BitMap attackBitMap(){
+
+        long map = 0L;
+        int colorSpecificOffset = 0;
+        BitMap occupancy;
+        if(isWhiteTurn) {
+            occupancy = new BitMap(this.getPieces()[OCCUPIED_SQUARES].getValue()
+                    & ~this.getPieces()[WHITE_KING].getValue());
+            colorSpecificOffset = 6;
+        }else{
+            occupancy = new BitMap(this.getPieces()[OCCUPIED_SQUARES].getValue()
+                    & ~this.getPieces()[BLACK_KING].getValue());
+        }
+
+        int pawns = Long.bitCount(this.getPieces()[WHITE_PAWNS + colorSpecificOffset].getValue());
+        long pawnsMap = this.getPieces()[WHITE_PAWNS + colorSpecificOffset].getValue();
+        while (pawns != 0) {
+            int index = Long.numberOfTrailingZeros(pawnsMap);
+            if(isWhiteTurn)
+                map |= Pieces.BLACK_PAWN_CAPTURE[index].getValue();
+            else
+                map |= Pieces.WHITE_PAWN_CAPTURE[index].getValue();
+            pawnsMap ^= 1L << index;
+            pawns--;
+        }
+
+        int rooks = Long.bitCount(this.getPieces()[WHITE_ROOKS + colorSpecificOffset].getValue());
+        long rooksMap = this.getPieces()[WHITE_ROOKS + colorSpecificOffset].getValue();
+        while (rooks != 0) {
+            int index = Long.numberOfTrailingZeros(rooksMap);
+            map |= Pieces.getRookAttacks(index, occupancy).getValue();
+            rooksMap ^= 1L << index;
+            rooks--;
+        }
+
+        int bishops = Long.bitCount(this.getPieces()[WHITE_BISHOPS + colorSpecificOffset].getValue());
+        long bishopsMap = this.getPieces()[WHITE_BISHOPS + colorSpecificOffset].getValue();
+        while (bishops != 0) {
+            int index = Long.numberOfTrailingZeros(bishopsMap);
+            map |= Pieces.getBishopAttacks(index, occupancy).getValue();
+            bishopsMap ^= 1L << index;
+            bishops--;
+        }
+
+        int queen = Long.bitCount(this.getPieces()[WHITE_QUEEN + colorSpecificOffset].getValue());
+        long queenMap = this.getPieces()[WHITE_QUEEN + colorSpecificOffset].getValue();
+        while (queen != 0) {
+            int index = Long.numberOfTrailingZeros(queenMap);
+            map |= Pieces.getQueenAttacks(index, occupancy).getValue();
+            queenMap ^= 1L << index;
+            queen--;
+        }
+
+        int knight = Long.bitCount(this.getPieces()[WHITE_KNIGHTS + colorSpecificOffset].getValue());
+        long knightMap = this.getPieces()[WHITE_KNIGHTS + colorSpecificOffset].getValue();
+        while (knight != 0) {
+            int index = Long.numberOfTrailingZeros(knightMap);
+            map |= Pieces.KNIGHT_MOVES[index].getValue();
+            knightMap ^= 1L << index;
+            knight--;
+        }
+
+        int king = Long.bitCount(this.getPieces()[WHITE_KING + colorSpecificOffset].getValue());
+        long kingMap = this.getPieces()[WHITE_KING + colorSpecificOffset].getValue();
+        while (king != 0) {
+            int index = Long.numberOfTrailingZeros(kingMap);
+            map |= Pieces.KING_MOVES[index].getValue();
+            kingMap ^= 1L << index;
+            king--;
+        }
+
+        return new BitMap(map);
+    }
+
+    public int evaluate(){
+        int value = Long.bitCount(this.getPieces()[WHITE_PAWNS].getValue());
+        value -= Long.bitCount(this.getPieces()[BLACK_PAWNS].getValue());
+
+        value += 5 * Long.bitCount(this.getPieces()[WHITE_ROOKS].getValue());
+        value -= 5 * Long.bitCount(this.getPieces()[BLACK_ROOKS].getValue());
+
+        value += 9 * Long.bitCount(this.getPieces()[WHITE_QUEEN].getValue());
+        value -= 9 * Long.bitCount(this.getPieces()[BLACK_QUEEN].getValue());
+
+        value += 3 * Long.bitCount(this.getPieces()[WHITE_BISHOPS].getValue());
+        value -= 3 * Long.bitCount(this.getPieces()[BLACK_BISHOPS].getValue());
+
+        value += 3 * Long.bitCount(this.getPieces()[WHITE_KNIGHTS].getValue());
+        value -= 3 * Long.bitCount(this.getPieces()[BLACK_KNIGHTS].getValue());
+
+        return value;
+    }
+
+    public Board moveAndClone(int move){
+
+        int startingSquare = move & 0x1F;
+        int endSquare = move & 0x1F << 5;
+
+        Board newBoard = new Board();
+
+        for(int i = 0; i < this.getPieces().length; i++){
+            newBoard.getPieces()[i] = new BitMap(this.getPieces()[i].getValue());
+        }
+
+        if(newBoard.movePiece(startingSquare, endSquare))
+            newBoard.movePieceAndPromote(startingSquare, endSquare, move & 0b111 << 10);
+
+        return newBoard;
+    }
+
+    public boolean isWhiteTurn(){
+        return isWhiteTurn;
     }
 
     public static Board defaultBoard() {
@@ -319,27 +1098,45 @@ public class Board {
         return result.toString();
     }
 
-    public void movePiece(int startingSquare, int endSquare) {
-        int pieceType = -1;
-        for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
-            if (this.getPieces()[i].getBit(startingSquare)) {
-                this.getPieces()[i].clearBit(startingSquare);
-                this.updateUtilsBitMap();
-                pieceType = i;
+    public void movePieceAndPromote(int startingSquare, int endSquare, int type) {
+        for(int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++){
+            this.getPieces()[i].clearBit(endSquare);
+        }
+        if(isWhiteTurn){
+            this.getPieces()[WHITE_PAWNS].clearBit(startingSquare);
+            switch (type){
+                case 1:
+                    this.getPieces()[WHITE_QUEEN].setBit(endSquare);
+                    break;
+                case 2:
+                    this.getPieces()[WHITE_ROOKS].setBit(endSquare);
+                    break;
+                case 3:
+                    this.getPieces()[WHITE_KNIGHTS].setBit(endSquare);
+                    break;
+                case 4:
+                    this.getPieces()[WHITE_BISHOPS].setBit(endSquare);
+                    break;
+            }
+        }else{
+            this.getPieces()[BLACK_PAWNS].clearBit(startingSquare);
+            switch (type){
+                case 1:
+                    this.getPieces()[BLACK_QUEEN].setBit(endSquare);
+                    break;
+                case 2:
+                    this.getPieces()[BLACK_ROOKS].setBit(endSquare);
+                    break;
+                case 3:
+                    this.getPieces()[BLACK_KNIGHTS].setBit(endSquare);
+                    break;
+                case 4:
+                    this.getPieces()[BLACK_BISHOPS].setBit(endSquare);
+                    break;
             }
         }
-
-        if (this.getPieces()[OCCUPIED_SQUARES].getBit(endSquare)){
-            for (int i = 0; i < NORMAL_CHESS_PIECE_TYPES; i++) {
-                if (this.getPieces()[i].getBit(endSquare)) {
-                    this.getPieces()[i].clearBit(endSquare);
-                }
-            }
-        }
-        this.getPieces()[pieceType].setBit(endSquare);
-
+        this.isWhiteTurn = !isWhiteTurn;
         this.updateUtilsBitMap();
-
+        testCastleRights();
     }
-
 }

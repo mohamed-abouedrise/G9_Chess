@@ -27,7 +27,7 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
     private int[] moves;
     
     public panel(){
-//        this.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+        this.setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
         this.setSize(2000, 750);
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -163,9 +163,14 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         if(moves != null) {
             for (int i = 0; i < this.moves.length; i++) {
                 if (this.moves[i] == BitMap.toIndex(file, rank)) {
-                    this.board.movePiece(BitMap.toIndex((char) ((int)(startingPoint.getX() / 75) + 'a')
+                    boolean promotion = this.board.movePiece(BitMap.toIndex((char) ((int)(startingPoint.getX() / 75) + 'a')
                                     , 8 - (int) (startingPoint.getY() / 75))
                             , BitMap.toIndex(file, rank));
+                    if(promotion){
+                        this.board.movePieceAndPromote(BitMap.toIndex((char) ((int)(startingPoint.getX() / 75) + 'a')
+                                        , 8 - (int) (startingPoint.getY() / 75))
+                                , BitMap.toIndex(file, rank), 1);
+                    }
                     startingPoint = null;
                 }
             }
@@ -174,7 +179,6 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
         currentPoint=null;
         moves =null;
         repaint();
-        SoundPlayer.playSound("check");
         
     }
 

@@ -14,14 +14,10 @@ public class frame extends JFrame{
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);
         panel.setLocation(0, 50);
-                this.add(panel);
-                
-
+        this.add(panel);
         this.add(clock);
         this.add(clock2);
-        
         this.setSize(2000, 750);
-        
         this.setLocationRelativeTo(null);        
         this.setVisible(true);
     }
