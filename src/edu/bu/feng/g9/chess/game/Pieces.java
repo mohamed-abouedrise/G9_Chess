@@ -246,50 +246,44 @@ public class Pieces {
         }
     }
 
-    static{
-        for(int i = 0; i < 64; i++){
-
+    static {
+        for (int i = 0; i < 64; i++) {
             char file = BitMap.getFile(i);
             int rank = BitMap.getRank(i);
 
-            KING_PIN_MASKS[0][i] = new BitMap();
-            KING_PIN_MASKS[1][i] = new BitMap();
-            KING_PIN_MASKS[2][i] = new BitMap();
-            KING_PIN_MASKS[3][i] = new BitMap();
-            KING_PIN_MASKS[4][i] = new BitMap();
-            KING_PIN_MASKS[5][i] = new BitMap();
-            KING_PIN_MASKS[6][i] = new BitMap();
-            KING_PIN_MASKS[7][i] = new BitMap();
+            for (int dir = 0; dir < 8; dir++) {
+                KING_PIN_MASKS[dir][i] = new BitMap();
+            }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= 8 - rank; j++) {
                 KING_PIN_MASKS[0][i].setBit(BitMap.toIndex(file, rank + j));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= Math.min(8 - rank, 'h' - file); j++) {
                 KING_PIN_MASKS[1][i].setBit(BitMap.toIndex((char)(file + j), rank + j));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= 'h' - file; j++) {
                 KING_PIN_MASKS[2][i].setBit(BitMap.toIndex((char)(file + j), rank));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= Math.min(rank - 1, 'h' - file); j++) {
                 KING_PIN_MASKS[3][i].setBit(BitMap.toIndex((char)(file + j), rank - j));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= rank - 1; j++) {
                 KING_PIN_MASKS[4][i].setBit(BitMap.toIndex(file, rank - j));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= Math.min(rank - 1, file - 'a'); j++) {
                 KING_PIN_MASKS[5][i].setBit(BitMap.toIndex((char)(file - j), rank - j));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= file - 'a'; j++) {
                 KING_PIN_MASKS[6][i].setBit(BitMap.toIndex((char)(file - j), rank));
             }
 
-            for(int j = 1; j <= 8 - rank; j++){
+            for (int j = 1; j <= Math.min(8 - rank, file - 'a'); j++) {
                 KING_PIN_MASKS[7][i].setBit(BitMap.toIndex((char)(file - j), rank + j));
             }
         }

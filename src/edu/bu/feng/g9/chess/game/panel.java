@@ -1,5 +1,6 @@
 package edu.bu.feng.g9.chess.game;
 
+import edu.bu.feng.g9.chess.game.engine.MiniMax;
 import edu.bu.feng.g9.chess.utils.BitMap;
 
 import java.awt.Color;
@@ -175,7 +176,14 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
                 }
             }
         }
-
+        if(this.board.isStaleMate() | this.board.isCheckMate()){
+            System.out.println("checkmate");
+            System.exit(0);
+        }
+        System.out.println(board.getLegalMoves().length);
+        MiniMax m = new MiniMax(0);
+        repaint();
+        this.board = m.execute(board);
         currentPoint=null;
         moves =null;
         repaint();
