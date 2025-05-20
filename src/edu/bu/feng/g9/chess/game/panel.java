@@ -176,7 +176,7 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
             System.exit(0);
         }
         SwingUtilities.invokeLater(() -> {
-            MiniMax m = new MiniMax(6);
+            MiniMax m = new MiniMax(4);
             if (!board.isWhiteTurn()) {
                 board = m.execute(board);
             }

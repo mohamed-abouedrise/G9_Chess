@@ -8,7 +8,7 @@ public class frame extends JFrame{
     
     panel panel;
     JLabel clock,clock2;
-        button1 newGameButton;
+    button1 newGameButton;
     button2 pauseButton;
     buttonsitting sittingButton;
     public frame(){

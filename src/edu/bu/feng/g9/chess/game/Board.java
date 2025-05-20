@@ -1025,6 +1025,15 @@ public class Board {
         value += 3 * Long.bitCount(this.getPieces()[WHITE_KNIGHTS].getValue());
         value -= 3 * Long.bitCount(this.getPieces()[BLACK_KNIGHTS].getValue());
 
+        value *= 100;
+
+        boolean turn = isWhiteTurn;
+        isWhiteTurn = true;
+        value += Long.bitCount(this.attackBitMap().getValue()) * 10;
+        isWhiteTurn = false;
+        value -= Long.bitCount(this.attackBitMap().getValue()) * 10;
+        isWhiteTurn = turn;
+
         return value;
     }
 
