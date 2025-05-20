@@ -15,8 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.Arrays;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 public class panel extends JPanel implements MouseListener,MouseMotionListener{
 
@@ -37,7 +36,6 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
     public void paint (Graphics g) {
 
         Graphics2D g2d = (Graphics2D) g;
-
         g2d.setPaint(new Color(0x739552));
 
         for (int i = 0; i < 8; i++) {
@@ -139,9 +137,7 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
             else
                 g2d.drawImage(this.board.getPiece(x, y), (int) currentPoint.getX()-34, (int)currentPoint.getY()-34, 69, 69, null);
         }
-
         this.getParent().repaint();
-
     }
 
     @Override
@@ -177,13 +173,17 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
             }
         }
         if(this.board.isStaleMate() | this.board.isCheckMate()){
-            System.out.println("checkmate");
             System.exit(0);
         }
-        System.out.println(board.getLegalMoves().length);
-        MiniMax m = new MiniMax(0);
-        repaint();
-        this.board = m.execute(board);
+        SwingUtilities.invokeLater(() -> {
+            MiniMax m = new MiniMax(6);
+            if (!board.isWhiteTurn()) {
+                board = m.execute(board);
+            }
+            currentPoint = null;
+            moves = null;
+            repaint(); // Final repaint
+        });
         currentPoint=null;
         moves =null;
         repaint();

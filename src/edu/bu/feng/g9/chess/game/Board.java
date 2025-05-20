@@ -103,13 +103,17 @@ public class Board {
 
     public boolean isBlackKingInCheck(){
         int kingLocation = Long.numberOfTrailingZeros(this.getPieces()[BLACK_KING].getValue());
-
-        return ((Pieces.BLACK_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[WHITE_PAWNS].getValue())
-                | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[WHITE_KNIGHTS].getValue())
-                | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))
-                | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
-                & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))) != 0;
+        try {
+            return ((Pieces.BLACK_PAWN_CAPTURE[kingLocation].getValue() & this.getPieces()[WHITE_PAWNS].getValue())
+                    | (Pieces.KNIGHT_MOVES[kingLocation].getValue() & this.getPieces()[WHITE_KNIGHTS].getValue())
+                    | (Pieces.getBishopAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & (this.getPieces()[WHITE_BISHOPS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))
+                    | (Pieces.getRookAttacks(kingLocation, this.getPieces()[OCCUPIED_SQUARES]).getValue()
+                    & (this.getPieces()[WHITE_ROOKS].getValue() | this.getPieces()[WHITE_QUEEN].getValue()))) != 0;
+        }catch (Exception e){
+            System.out.println(this);
+            return false;
+        }
     }
 
     public Image getPiece(int x, int y){
@@ -210,17 +214,22 @@ public class Board {
         castleSquares.setBit(BitMap.toIndex('b', 8));
         castleSquares.setBit(BitMap.toIndex('c', 8));
         castleSquares.setBit(BitMap.toIndex('d', 8));
+        castleSquares = new BitMap(castleSquares.getValue() & ~attackMap
+                & ~this.getPieces()[BLACK_PIECES].getValue());
 
         long castle = 0L;
-        if((castleRights & (1 << 2)) != 0) {
-            castle |= 1L << 62;
+        if((castleRights & (1 << 2)) != 0 && castleSquares.getBit(BitMap.toIndex('f', 8))
+                && castleSquares.getBit(BitMap.toIndex('g', 8))) {
+            castle |= 1L << 6;
         }
-        if((castleRights & (1 << 3)) != 0) {
-            castle |= 1L << 58;
+        if((castleRights & (1 << 3)) != 0&& castleSquares.getBit(BitMap.toIndex('b', 8))
+                && castleSquares.getBit(BitMap.toIndex('c', 8))
+                && castleSquares.getBit(BitMap.toIndex('d', 8))) {
+            castle |= 1L << 2;
         }
 
-
-        castle &= castleSquares.getValue() & ~attackMap & ~this.getPieces()[BLACK_PIECES].getValue();
+        if(isBlackKingInCheck())
+            castle = 0L;
         return new BitMap(((Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
                 & ~this.getPieces()[BLACK_PIECES].getValue())
                 & ~attackMap)
@@ -235,21 +244,28 @@ public class Board {
         castleSquares.setBit(BitMap.toIndex('b', 1));
         castleSquares.setBit(BitMap.toIndex('c', 1));
         castleSquares.setBit(BitMap.toIndex('d', 1));
+        castleSquares = new BitMap(castleSquares.getValue() & ~attackMap
+                & ~this.getPieces()[WHITE_PIECES].getValue());
 
         long castle = 0L;
-        if((castleRights & 1) != 0) {
+        if((castleRights & 1) != 0 && castleSquares.getBit(BitMap.toIndex('f', 1))
+                && castleSquares.getBit(BitMap.toIndex('g', 1))) {
             castle |= 1L << 6;
         }
-        if((castleRights & (1 << 1)) != 0) {
+        if((castleRights & (1 << 1)) != 0&& castleSquares.getBit(BitMap.toIndex('b', 1))
+                && castleSquares.getBit(BitMap.toIndex('c', 1))
+                && castleSquares.getBit(BitMap.toIndex('d', 1))) {
             castle |= 1L << 2;
         }
 
+        if(isWhiteKingInCheck())
+            castle = 0L;
 
-        castle &= castleSquares.getValue() & ~attackMap & ~this.getPieces()[WHITE_PIECES].getValue();
+        BitMap castleBitMap = new BitMap(castle);
         return new BitMap(((Pieces.KING_MOVES[BitMap.toIndex(file, y)].getValue()
                 & ~this.getPieces()[WHITE_PIECES].getValue())
                 & ~attackMap)
-                | castle).toIntArray();
+                | castleBitMap.getValue()).toIntArray();
     }
 
     private int[] getBlackQueenMoves(int y, char file) {
@@ -797,14 +813,8 @@ public class Board {
     public boolean movePiece(int startingSquare, int endSquare) {
         int pieceType = -1;
 
-        if(this.getPieces()[WHITE_PAWNS].getBit(startingSquare) && BitMap.getRank(startingSquare) == 2
-                && BitMap.getRank(endSquare) == 4)
-            this.enPassent = endSquare;
-        else if(this.getPieces()[BLACK_PIECES].getBit(startingSquare) && BitMap.getRank(startingSquare) == 7
-                && BitMap.getRank(endSquare) == 5)
-            this.enPassent = endSquare;
-        else
-            this.enPassent = -1;
+        if(this.getPieces()[WHITE_KING].getBit(endSquare) || this.getPieces()[BLACK_KING].getBit(endSquare))
+            throw new IllegalArgumentException();
 
         if(BitMap.getRank(endSquare) == 8 && this.getPieces()[WHITE_PAWNS].getBit(startingSquare)){
             return true;
@@ -813,6 +823,17 @@ public class Board {
         if(BitMap.getRank(endSquare) == 1 && this.getPieces()[BLACK_PIECES].getBit(startingSquare)){
             return true;
         }
+
+        int lastEnPassent = enPassent;
+
+        if(this.getPieces()[WHITE_PAWNS].getBit(startingSquare) && BitMap.getRank(startingSquare) == 2
+                && BitMap.getRank(endSquare) == 4)
+            this.enPassent = endSquare;
+        else if(this.getPieces()[BLACK_PIECES].getBit(startingSquare) && BitMap.getRank(startingSquare) == 7
+                && BitMap.getRank(endSquare) == 5)
+            this.enPassent = endSquare;
+        else
+            this.enPassent = -1;
 
         if(this.getPieces()[WHITE_KING].getBit(BitMap.toIndex(BitMap.getFile(startingSquare), BitMap.getRank(startingSquare)))){
             if(endSquare == BitMap.toIndex('g', 1) && (castleRights & 1) != 0){
@@ -827,7 +848,6 @@ public class Board {
                 this.getPieces()[WHITE_ROOKS].setBit(BitMap.toIndex('d', 1));
             }
         }
-
         if(this.getPieces()[BLACK_KING].getBit(BitMap.toIndex(BitMap.getFile(startingSquare), BitMap.getRank(startingSquare)))){
             if(endSquare == BitMap.toIndex('g', 8) && (castleRights & 1 << 2) != 0){
                 pieceType = BLACK_KING;
@@ -857,6 +877,13 @@ public class Board {
                 }
             }
         }
+
+        if (pieceType == WHITE_PAWNS && endSquare == lastEnPassent + 8) {
+            this.getPieces()[BLACK_PAWNS].clearBit(lastEnPassent);
+        } else if (pieceType == BLACK_PAWNS && endSquare == lastEnPassent - 8) {
+            this.getPieces()[WHITE_PAWNS].clearBit(lastEnPassent);
+        }
+
         this.getPieces()[pieceType].setBit(endSquare);
         this.isWhiteTurn = !isWhiteTurn;
         this.updateUtilsBitMap();
@@ -977,6 +1004,12 @@ public class Board {
     }
 
     public int evaluate(){
+        if(this.isCheckMate() && this.isWhiteTurn)
+            return -1000000;
+        else if(this.isCheckMate() && !this.isWhiteTurn)
+            return 1000000;
+        else if(this.isStaleMate())
+            return 0;
         int value = Long.bitCount(this.getPieces()[WHITE_PAWNS].getValue());
         value -= Long.bitCount(this.getPieces()[BLACK_PAWNS].getValue());
 
@@ -998,14 +1031,16 @@ public class Board {
     public Board moveAndClone(int move){
 
         int startingSquare = move & 0x3F;
-        int endSquare = move & 0x3F << 5;
-
+        int endSquare = (move >> 6) & 0x3F;
         Board newBoard = new Board();
         for(int i = 0; i < this.getPieces().length; i++){
             newBoard.getPieces()[i] = new BitMap(this.getPieces()[i].getValue());
         }
+        newBoard.isWhiteTurn = isWhiteTurn;
+        newBoard.enPassent = enPassent;
+        newBoard.castleRights = castleRights;
         if(newBoard.movePiece(startingSquare, endSquare))
-            newBoard.movePieceAndPromote(startingSquare, endSquare, move & 0b111 << 10);
+            newBoard.movePieceAndPromote(startingSquare, endSquare, (move >> 12) & 0b111);
         return newBoard;
     }
 
@@ -1380,6 +1415,10 @@ public class Board {
         if(!isWhiteTurn && isBlackKingInCheck())
             return false;
         return this.getLegalMoves().length == 0;
+    }
+
+    public void setTurn(boolean white){
+        this.isWhiteTurn = white;
     }
 
 }
