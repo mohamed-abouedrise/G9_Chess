@@ -172,11 +172,28 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
                 }
             }
         }
-        if(this.board.isStaleMate() | this.board.isCheckMate()){
-            System.exit(0);
-        }
+        repaint();
         SwingUtilities.invokeLater(() -> {
-            MiniMax m = new MiniMax(4);
+            if(this.board.isStaleMate()){
+                JOptionPane.showMessageDialog(this, "Draw");
+                this.board = Board.defaultBoard();
+                moves = null;
+                startingPoint = null;
+                currentPoint = null;
+            }else if(this.board.isCheckMate() && board.isWhiteTurn()){
+                JOptionPane.showMessageDialog(this, "Black Wins");
+                this.board = Board.defaultBoard();
+                moves = null;
+                startingPoint = null;
+                currentPoint = null;
+            }else if(this.board.isCheckMate() && !board.isWhiteTurn()){
+                JOptionPane.showMessageDialog(this, "White Wins");
+                this.board = Board.defaultBoard();
+                moves = null;
+                startingPoint = null;
+                currentPoint = null;
+            }
+            MiniMax m = new MiniMax(0);
             if (!board.isWhiteTurn()) {
                 board = m.execute(board);
             }
@@ -184,6 +201,25 @@ public class panel extends JPanel implements MouseListener,MouseMotionListener{
             moves = null;
             repaint(); // Final repaint
         });
+        if(this.board.isStaleMate()){
+            JOptionPane.showMessageDialog(this, "Draw");
+            this.board = Board.defaultBoard();
+            moves = null;
+            startingPoint = null;
+            currentPoint = null;
+        }else if(this.board.isCheckMate() && board.isWhiteTurn()){
+            JOptionPane.showMessageDialog(this, "Black Wins");
+            this.board = Board.defaultBoard();
+            moves = null;
+            startingPoint = null;
+            currentPoint = null;
+        }else if(this.board.isCheckMate() && !board.isWhiteTurn()){
+            JOptionPane.showMessageDialog(this, "White Wins");
+            this.board = Board.defaultBoard();
+            moves = null;
+            startingPoint = null;
+            currentPoint = null;
+        }
         currentPoint=null;
         moves =null;
         repaint();
